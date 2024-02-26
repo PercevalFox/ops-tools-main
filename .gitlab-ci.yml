@@ -1,0 +1,29 @@
+
+stages:
+  - build
+  - deploy
+
+.version:
+  parallel:
+    matrix:
+      - NAME: packer-ansible
+      - NAME: ssh
+      - NAME: terraform-ansible
+
+Build-ops-tool:
+  extends: .version
+  stage: build
+  image: docker:latest
+  script: 
+    - echo "Pushing as $CI_REGISTRY_USER // $CI_REGISTRY_PASSWORD"
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - docker build --build-arg SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY" -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/${NAME} -f ${NAME}.dockerfile .
+    - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/${NAME}
+
+# deploy_ops-tool:
+#   stage: deploy
+#   script:
+#     - echo "test"
+ 
+
+
